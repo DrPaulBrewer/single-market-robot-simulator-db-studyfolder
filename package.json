@@ -1,0 +1,36 @@
+{
+  "name": "single-market-robot-simulator-db-studyfolder",
+  "version": "1.0.0",
+  "description": "studyfolder base class for single-market-robot-simulator web apps",
+  "main": "build/index.js",
+  "jsnext:main": "src/index.js",
+  "scripts": {
+    "clean": "rm -rf ./build ./doc ; mkdir ./build",
+    "build": "node_modules/.bin/babel src --out-dir build ; done",
+    "doc": "node_modules/.bin/esdoc -c esdoc.json",
+    "lint": "node_modules/.bin/eslint src/**.js",
+    "go": "npm run clean && npm run lint && npm run build"
+  },
+  "author": "drpaulbrewer@eaftc.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drpaulbrewer/single-market-robot-simulator-db-studyfolder"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^10.0.3",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "coveralls": "^3.0.7",
+    "esdoc": "^1.1.0",
+    "eslint": "^6.6.0",
+    "istanbul": "^1.0.0-alpha.2",
+    "mocha": "^6.2.2",
+    "should": "^13.2.3"
+  },
+  "dependencies": {
+    "array-prefer": "^0.1.0",
+    "p-reduce": "^2.1.0"
+  }
+}
