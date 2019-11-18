@@ -24,10 +24,7 @@
     "babel-preset-env": "^1.7.0",
     "coveralls": "^3.0.7",
     "esdoc": "^1.1.0",
-    "eslint": "^6.6.0",
-    "istanbul": "^1.0.0-alpha.2",
-    "mocha": "^6.2.2",
-    "should": "^13.2.3"
+    "eslint": "^6.6.0"
   },
   "dependencies": {
     "array-prefer": "^0.1.0",
