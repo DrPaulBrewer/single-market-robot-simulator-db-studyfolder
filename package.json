@@ -18,10 +18,11 @@
     "url": "https://github.com/drpaulbrewer/single-market-robot-simulator-db-studyfolder"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^10.0.3",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/polyfill": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/register": "^7.8.3",
     "coveralls": "^3.0.7",
     "esdoc": "^1.1.0",
     "eslint": "^6.6.0"

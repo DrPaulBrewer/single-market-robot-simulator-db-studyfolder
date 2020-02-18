@@ -8,7 +8,7 @@ export {arrayPrefer};
 
 export class StudyFolder {
     constructor(props){
-        Object.keys(props).forEach(k => { this[k] = props[k]; });
+        Object.keys(props).forEach((k) => { this[k] = props[k]; });
     }
 
     async getConfig(){
