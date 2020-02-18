@@ -1,6 +1,6 @@
 {
   "name": "single-market-robot-simulator-db-studyfolder",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "studyfolder base class for single-market-robot-simulator web apps",
   "main": "build/index.js",
   "jsnext:main": "src/index.js",
