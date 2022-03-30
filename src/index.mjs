@@ -8,7 +8,12 @@ export {arrayPrefer};
 
 export class StudyFolder {
     constructor(props){
-        Object.keys(props).forEach((k) => { this[k] = props[k]; });
+        const t = typeof(props);
+        if (t==='object'){
+          Object.assign(this,props);
+        } else {
+          throw new TypeError("expected an Object, got:"+t);
+        }
     }
 
     async getConfig(){
