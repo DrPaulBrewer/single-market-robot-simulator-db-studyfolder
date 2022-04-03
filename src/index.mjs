@@ -4,49 +4,37 @@
 /* eslint-disable no-console */
 
 import arrayPrefer from 'array-prefer';
+import {scan} from 'secure-json-parse';
 export {arrayPrefer};
+
+const configFileName = 'config.json';
+
+function expectSafeObject(obj){
+  const t = typeof(obj);
+  if (t!=='object')
+    throw new TypeError("expected an Object, got:"+t);
+  scan(obj);
+  return obj;
+}
 
 export class StudyFolder {
     constructor(props){
-        const t = typeof(props);
-        if (t==='object'){
-          Object.assign(this,props);
-        } else {
-          throw new TypeError("expected an Object, got:"+t);
-        }
+      if (props!==undefined)
+        expectSafeObject(props);
+      Object.assign(this,props);
     }
 
     async getConfig(){
         const folder = this;
-        const config = await this.download({ name: 'config.json' });
-        const shouldFixName = (config.name && this.name && this.name.length && config.name!==this.name);
-        const shouldFixDescription = (config.description && this.description && this.description.length && config.description!==this.description);
-        if (shouldFixName) config.name = this.name;
-        if (shouldFixDescription) config.description = this.description;
-        if (!this.readOnly){
-          if (shouldFixName || shouldFixDescription)
-              await this.upload({
-                  name: 'config.json',
-                  contents: config,
-                  force: true
-              });
-        }
-        return { config, folder };
+        const config = await folder.download({ name: configFileName });
+        expectSafeObject(config);
+        return config;
     }
 
     async setConfig({config}){
-        if (config && (typeof(config)==='object')){
-            if ((this.name) && (config.name !== this.name))
-                throw new Error(`mismatch at StudyFolder:setConfig configuration name ${config.name} should equal the folder name ${this.name}`);
-            await this.upload({ name: 'config.json',  contents: config});
-            if (this.description !== config.description){
-                this.description = config.description;
-                if (!this.readOnly){
-                  await this.update({description: config.description});
-                }
-            }
-        }
-        return this;
+        const folder = this;
+        expectSafeObject(config);
+        await folder.upload({ name: configFileName,  contents: config});
     }
 
     async unimplemented(what){
@@ -76,17 +64,11 @@ export class StudyFolder {
     }
 
     async update(){ // (metadata)
-      if (this.readOnly){
-        throw new Error("cannot update readOnly StudyFolder");
-      }
       this.unimplemented('update');
     }
 
     async upload(){
       // {name, contents, blob, onProgress, force}
-      if (this.readOnly){
-        throw new Error("cannot upload readOnly StudyFolder");
-      }
       this.unimplemented('upload');
     }
 }

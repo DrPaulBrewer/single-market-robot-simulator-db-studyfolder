@@ -26,6 +26,7 @@
     "should": "^13.2.3"
   },
   "dependencies": {
-    "array-prefer": "^0.1.0"
+    "array-prefer": "^0.1.0",
+    "secure-json-parse": "^2.4.0"
   }
 }
