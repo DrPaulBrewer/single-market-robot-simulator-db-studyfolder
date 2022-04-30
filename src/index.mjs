@@ -7,9 +7,9 @@ import arrayPrefer from 'array-prefer';
 import {scan} from 'secure-json-parse';
 export {arrayPrefer};
 
-const configFileName = 'config.json';
+export const configFileName = 'config.json';
 
-function expectSafeObject(obj){
+export function expectSafeObject(obj){
   const t = typeof(obj);
   if (t!=='object')
     throw new TypeError("expected an Object, got:"+t);
@@ -37,8 +37,12 @@ export class StudyFolder {
         await folder.upload({ name: configFileName,  contents: config});
     }
 
-    async unimplemented(what){
-      throw new Error(`${what} is unimplemented in StudyFolder base class and needs to be defined in a subclass`);
+    unimplemented(what){
+      throw new Error(`${what} is unimplemented in StudyFolder base class`);
+    }
+
+    readOnlyError(){
+      throw new Error("cannot modify a read-only StudyFolder");
     }
 
     async search(){ // (name)
@@ -64,11 +68,17 @@ export class StudyFolder {
     }
 
     async update(){ // (metadata)
-      this.unimplemented('update');
+      if (this.readOnly)
+        this.readOnlyError();
+      else
+        this.unimplemented('update');
     }
 
     async upload(){
       // {name, contents, blob, onProgress, force}
-      this.unimplemented('upload');
+      if (this.readOnly)
+        this.readOnlyError();
+      else
+        this.unimplemented('upload');
     }
 }
