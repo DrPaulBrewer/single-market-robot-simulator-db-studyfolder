@@ -18,10 +18,12 @@ export function expectSafeObject(obj){
 }
 
 export class StudyFolder {
+
     constructor(props){
-      if (props!==undefined)
-        expectSafeObject(props);
-      Object.assign(this,props);
+        if (typeof(props)==='object') {
+            expectSafeObject(props);
+            Object.assign(this, props);
+        }
     }
 
     async getConfig(){
@@ -80,5 +82,48 @@ export class StudyFolder {
         this.readOnlyError();
       else
         this.unimplemented('upload');
+    }
+
+    async prepUpload(options){
+        const {name, contents, force} = options;
+        /* c8 ignore start */
+        if (typeof Blob !== 'function') {
+            throw new Error("Critical Error: Blob is not available on this platform");
+        }
+        /* c8 ignore stop */
+        if (!name)
+            throw new Error("Error: prepUpload: missing file name");
+        if (name.endsWith(".json"))  {
+            const typeOfContents = typeof(contents);
+            if (typeOfContents!=='object'){
+                throw new Error(`Upload of .json file requires contents to be an object, got ${typeOfContents}`);
+            }
+            expectSafeObject(contents);
+            options.blob = new Blob(
+                [JSON.stringify(contents, null, 2)],
+                {type: 'application/json'}
+            );
+            options.mimeType = 'application/json';
+        } else if (name.endsWith(".zip")) {
+            options.mimeType = 'application/zip';
+            if (!options.blob)
+                throw new Error("Upload of .zip file requires blob input, blob not found");
+        } else {
+            throw new Error(`Upload Policy Violation: Only .json and .zip file uploads supported (${name})`);
+        }
+        options.size = options.blob.size;
+        const folderFiles = await this.listFiles();
+        const folderHasZipFiles = folderFiles.some((f)=>(f.name.endsWith(".zip")));
+        const existingFile = folderFiles.find((f)=>(name===f.name));
+        if (!force){
+            // optional policies go here
+            if ((name==='config.json') && folderHasZipFiles){
+                throw new Error("Upload Policy Violation:  May not save a new config.json file into a study folder with existing .zip file data");
+            }
+            if ((name.endsWith(".zip")) && existingFile){
+                throw new Error("Upload Policy Violation: May not overwrite existing zip file "+name);
+            }
+        }
+        return {folderFiles, folderHasZipFiles, existingFile};
     }
 }

@@ -55,7 +55,7 @@ describe('StudyFolder', ()=>{
     StudyFolder.should.be.type('function');
   });
 
-  it('constructor should not throw error if properties unsupplied', ()=>{
+  it('constructor should not throw error if properties undefined', ()=>{
     const sf = new StudyFolder();
     sf.should.be.type('object');
     Object.keys(sf).should.deepEqual([]);
@@ -158,6 +158,111 @@ describe('StudyFolder', ()=>{
         sf.hintFileId = 789;
         const found = await sf.listFiles();
         found.should.deepEqual([files[2],files[0],files[1]]);
+      });
+    });
+    describe('prepUpload with no zip files in folder', ()=>{
+      it('should reject missing name', async ()=>{
+        return sf.prepUpload({}).should.be.rejected();
+      });
+      [
+        {name: "hello.json", contents: "hello world"},
+        {name: "number.json", contents: 34},
+        {name: "undefined.json"},
+        {name: "null.json", contents:null}
+      ].forEach((options)=> it(
+          `should reject ${options.name} upload with ${typeof(options.contents)} contents`,
+          async ()=>(sf.prepUpload(options).should.be.rejected())
+      )
+      );
+      it("should accept .json upload, convert to blob, resolving to {folderFiles, folderHasZipFiles:false, existingFile:undefined}", async()=>{
+        const expected = {
+          folderFiles:files,
+          folderHasZipFiles: false,
+          existingFile: undefined
+        };
+        const contents = {
+          hello: "world",
+          favoriteNumber: 53
+        };
+        const expectedJSON = JSON.stringify(contents,null,2);
+        const expectedSize = expectedJSON.length;
+        const expectedMimeType = 'application/json';
+        const options = {
+          name: "good.json",
+          contents
+        }
+        const result = await sf.prepUpload(options);
+        result.should.deepEqual(expected);
+        options.blob.size.should.equal(expectedSize);
+        options.size.should.equal(expectedSize);
+        options.mimeType.should.deepEqual(expectedMimeType);
+        const text = await options.blob.text();
+        text.should.deepEqual(expectedJSON);
+      });
+      it("should reject .zip upload without blob", async()=>(
+         sf.prepUpload({name: "noblob.zip"}).should.be.rejected()
+      ));
+      it("should accept .zip upload if blob is defined, resolving to {folderFiles, folderHasZipFiles:false, existingFile:undefined}", async()=>{
+        const expected = {
+          folderFiles:files,
+          folderHasZipFiles: false,
+          existingFile: undefined
+        };
+        const options ={
+          name:"blob.zip",
+          blob: new Blob(['Hello'])
+        };
+        const result = await sf.prepUpload(options);
+        options.mimeType.should.deepEqual("application/zip");
+        result.should.deepEqual(expected);
+      });
+      it("should reject chart.png upload because not .zip or .json", async()=>(
+         sf.prepUpload({name: "chart.png"}).should.be.rejected()
+      ));
+    });
+  });
+
+  describe('with shimmed .search pointing to config.json and 20220101.zip', function() {
+    let sf, files;
+    beforeEach(function () {
+      sf = new StudyFolder();
+      files = [
+        {name: 'config.json', id: 1},
+        {name: '20220101.zip', id: 2}
+      ];
+      sf.search = async function (name) {
+        if (name === undefined) {
+          return files;
+        }
+        if (name === 'config.json')
+          return [files[0]];
+        if (name === '20220101.zip')
+          return [files[1]];
+      };
+    });
+    it('should reject upload of config.json as policy violation', async ()=>(
+       sf.prepUpload({name:"config.json", contents:{}}).should.be.rejectedWith(/May not save a new config.json/)
+    ));
+    it('should reject upload of 20220101.zip as policy violation', async ()=> {
+      const options = {
+        name: "20220101.zip",
+        blob: new Blob([''])
+      };
+      return await sf.prepUpload(options)
+          .should
+          .be
+          .rejectedWith(/May not overwrite existing zip file/);
+    });
+    it('should accept upload of 20220222.zip', async ()=> {
+      const options = {
+        name: "20220222.zip",
+        blob: new Blob([''])
+      };
+      const result = await sf.prepUpload(options);
+      result.should.deepEqual({
+        folderFiles:files,
+        folderHasZipFiles: true,
+        existingFile: undefined
       });
     });
   });
