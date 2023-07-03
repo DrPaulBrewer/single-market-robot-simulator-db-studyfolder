@@ -27,6 +27,6 @@
   },
   "dependencies": {
     "array-prefer": "^0.1.0",
-    "secure-json-parse": "^2.4.0"
+    "secure-json-parse": "^2.7.0"
   }
 }
